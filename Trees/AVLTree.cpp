@@ -1,6 +1,8 @@
 #include <iostream>
 using namespace std;
 
+// Delete Function is not Completed
+
 struct BSTNode
 {
   int data;
