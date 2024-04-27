@@ -142,8 +142,7 @@ BSTNode *deleteNode(BSTNode *root, int toDelete)
       cout << "Deleted Successfully " << endl;
       return tmp;
     }
-    BSTNode *tmp = root->right;
-    BSTNode *minNode = min(tmp);
+    BSTNode *minNode = min(root->right);
     root->data = minNode->data;
     root->right = deleteNode(root->right, minNode->data);
   }

@@ -197,10 +197,26 @@ BSTNode *deleteNode(BSTNode *root, int toDelete)
   if (toDelete < root->data)
   {
     root->left = deleteNode(root->left, toDelete);
+    if (root->left == NULL)
+    {
+      root->heightLeft = 0;
+    }
+    else
+    {
+      root->heightLeft = maxHeight(root->left->heightLeft, root->left->heightRight) + 1;
+    }
   }
   else if (toDelete > root->data)
   {
     root->right = deleteNode(root->right, toDelete);
+    if (root->right == NULL)
+    {
+      root->heightRight = 0;
+    }
+    else
+    {
+      root->heightRight = maxHeight(root->right->heightLeft, root->right->heightRight) + 1;
+    }
   }
   else
   {
@@ -222,6 +238,7 @@ BSTNode *deleteNode(BSTNode *root, int toDelete)
     BSTNode *minNode = min(tmp);
     root->data = minNode->data;
     root->right = deleteNode(root->right, minNode->data);
+    root->heightRight = maxHeight(root->right->heightLeft, root->right->heightRight) + 1;
   }
 }
 
