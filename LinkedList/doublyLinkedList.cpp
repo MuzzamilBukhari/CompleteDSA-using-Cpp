@@ -5,6 +5,7 @@ struct Node
 {
   int data;
   int index;
+  Node *prev;
   Node *next;
 };
 
@@ -13,44 +14,38 @@ void sortedInsert(int value, Node **head)
   Node *ptr = (Node *)malloc(sizeof(Node));
   ptr->data = value;
   ptr->index = 0;
-  ptr->next = NULL;
+  ptr->prev = ptr->next = NULL;
   if (*head == NULL)
   {
     *head = ptr;
-    (*head)->next = *head;
     return;
   }
   if (ptr->data < (*head)->data)
   {
-    Node *last = *head;
-    do
-    {
-      last = last->next;
-    } while (last->next != *head);
-
     ptr->next = *head;
+    (*head)->prev = ptr;
     *head = ptr;
-    last->next = *head;
+
     Node *curr = (*head)->next;
-    while (curr != *head)
+    while (curr != NULL)
     {
       curr->index++;
       curr = curr->next;
     }
     return;
   }
-  Node *prev = NULL;
   Node *curr = *head;
-  while (curr->next != *head)
+  while (curr->next != NULL)
   {
     ptr->index++;
-    prev = curr;
     curr = curr->next;
     if (ptr->data < curr->data)
     {
-      prev->next = ptr;
+      curr->prev->next = ptr;
+      ptr->prev = curr->prev;
       ptr->next = curr;
-      while (curr != *head)
+      curr->prev = ptr;
+      while (curr != NULL)
       {
         curr->index++;
         curr = curr->next;
@@ -61,7 +56,7 @@ void sortedInsert(int value, Node **head)
   // if current == null
   ptr->index++;
   curr->next = ptr;
-  ptr->next = *head;
+  ptr->prev = curr;
 }
 
 void insert(int value, Node **head)
@@ -69,21 +64,21 @@ void insert(int value, Node **head)
   Node *ptr = (Node *)malloc(sizeof(Node));
   ptr->data = value;
   ptr->index = 0;
-  ptr->next = *head;
+  ptr->prev = ptr->next = NULL;
   if (*head == NULL)
   {
     *head = ptr;
-    (*head)->next = *head;
     return;
   }
   Node *curr = *head;
-  while (curr->next != *head)
+  while (curr->next != NULL)
   {
     ptr->index++;
     curr = curr->next;
   }
   ptr->index++;
   curr->next = ptr;
+  ptr->prev = curr;
 }
 
 bool search(int toSearch, Node *head)
@@ -93,14 +88,14 @@ bool search(int toSearch, Node *head)
     return false;
   }
   Node *curr = head;
-  do
+  while (curr != NULL)
   {
     if (curr->data == toSearch)
     {
       return true;
     }
     curr = curr->next;
-  } while (curr != head);
+  }
   return false;
 }
 
@@ -112,11 +107,11 @@ void print(Node *head)
     return;
   }
   Node *curr = head;
-  do
+  while (curr != NULL)
   {
     cout << curr->data << " and index is " << curr->index << " ";
     curr = curr->next;
-  } while (curr != head);
+  }
   cout << endl;
 }
 
@@ -124,48 +119,41 @@ void deleteNode(int toDelete, Node **head)
 {
   if (*head == NULL)
   {
-    cout << "List is EMpty" << endl;
-    return;
-  }
-  if ((*head)->data == toDelete && (*head)->next == *head)
-  {
-    Node *curr = *head;
-    free(curr);
-    *head = NULL;
-    cout << "Deleted Successfully " << endl;
+    cout << "List is Empty" << endl;
     return;
   }
   if ((*head)->data == toDelete)
   {
-    Node *last = *head;
-    do
-    {
-      last = last->next;
-    } while (last->next != *head);
     Node *curr = *head;
     *head = (*head)->next;
+    if (*head != NULL)
+    {
+      (*head)->prev = NULL;
+    }
     free(curr);
-    last->next = *head;
     curr = *head;
-    do
+    while (curr != NULL)
     {
       curr->index--;
       curr = curr->next;
-    } while (curr != *head);
-
+    }
     cout << "Deleted Successfully " << endl;
     return;
   }
-  Node *prev = *head;
   Node *curr = (*head)->next;
-  while (curr != *head)
+  while (curr != NULL)
   {
     if (curr->data == toDelete)
     {
-      prev->next = curr->next;
-      free(curr);
-      curr = prev->next;
-      while (curr != *head)
+      curr->prev->next = curr->next;
+      if (curr->next != NULL)
+      {
+        curr->next->prev = curr->prev;
+      }
+      Node *tmp = curr;
+      curr = curr->next;
+      free(tmp);
+      while (curr != NULL)
       {
         curr->index--;
         curr = curr->next;
@@ -174,10 +162,9 @@ void deleteNode(int toDelete, Node **head)
       cout << "Deleted Successfully" << endl;
       return;
     }
-    prev = curr;
     curr = curr->next;
   }
-  cout << "Value not Found" << endl;
+  cout << "Value Not Found" << endl;
 }
 
 void deleteList(Node **head)
@@ -187,21 +174,13 @@ void deleteList(Node **head)
     cout << "list is already empty" << endl;
     return;
   }
-  Node *last = *head;
-  do
-  {
-    last = last->next;
-  } while (last->next != *head);
-
   Node *curr = *head;
-  while (curr != last)
+  do
   {
     *head = (*head)->next;
     free(curr);
     curr = *head;
-  }
-  free(*head);
-  *head = NULL;
+  } while (curr != NULL);
   cout << "Delete whole List Successfully" << endl;
 }
 
@@ -217,7 +196,7 @@ int countNode(Node *head)
   {
     count++;
     curr = curr->next;
-  } while (curr != head);
+  } while (curr != NULL);
   return count;
 }
 
@@ -232,7 +211,7 @@ int main()
          << "Enter 3 to Print " << endl
          << "Enter 4 to Delete" << endl
          << "Enter 5 to Delete Whole List" << endl
-         << "Enter 6 to Count total no of Nodes" << endl
+         << "Enter 6 to Count total no of nodes" << endl
          << "Enter 7 to Quit" << endl;
     cin >> n;
     if (n == 1)
@@ -245,7 +224,7 @@ int main()
     else if (n == 2)
     {
       int toSearch;
-      cout << "Enter value to Search ffor : ";
+      cout << "Enter value to Search for : ";
       cin >> toSearch;
       if (search(toSearch, head))
       {
